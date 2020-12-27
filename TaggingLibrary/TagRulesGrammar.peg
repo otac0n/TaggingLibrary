@@ -1,0 +1,21 @@
+@namespace MediaLibrary.Tagging
+@classname TagRulesGrammar
+@using System.Linq
+@using System.Collections.Immutable
+
+lines <IList<TagRule>> = EOL? lines:line<0,, EOL> EOL? EOF { lines.SelectMany(l => l).ToImmutableList() }
+line <IList<TagRule>>
+    = _ l:tagsL _ &"::" o:op _ r:tagsR _ p:tagsP _ { new[] { new TagRule(ImmutableHashSet.CreateRange(l), TagOperator.Property, ImmutableHashSet.CreateRange(p)), new TagRule(ImmutableHashSet.CreateRange(l), o, ImmutableHashSet.CreateRange(r)) } }
+    / _ l:tagsL _ o:op _ r:tagsR _ { new[] { new TagRule(ImmutableHashSet.CreateRange(l), o, ImmutableHashSet.CreateRange(r)) } }
+    / _ l:tagsL _ p:tagsP { new[] { new TagRule(ImmutableHashSet.CreateRange(l), TagOperator.Property, ImmutableHashSet.CreateRange(p)) } }
+op <TagOperator> = o:("<"? "->" / "<"? "~>" / "<"? "!>" / "::" / "=>") { TagRule.StringToOperatorLookup[o] }
+tagsL = tag<1,, _ "&" _>
+tagsR = tag<1,, _ "|" _>
+tagsP <IList<string>> = "[" _ p:property<1,, _ "," _> _ "]" { p }
+tag = "" ([_/A-Za-z0-9][-._/A-Za-z0-9]*)<1,,WS>
+property = "" ([-#@$%^&*()=._/A-Za-z0-9]*)<1,,WS>
+
+EOF = !.
+EOL = "" (_ [\r\n\u2028\u2029])+
+WS = "" [ \t]+
+_ -memoize = "" WS?
