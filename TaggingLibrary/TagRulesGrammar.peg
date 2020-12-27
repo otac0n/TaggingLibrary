@@ -1,4 +1,4 @@
-@namespace MediaLibrary.Tagging
+@namespace TaggingLibrary
 @classname TagRulesGrammar
 @using System.Linq
 @using System.Collections.Immutable
