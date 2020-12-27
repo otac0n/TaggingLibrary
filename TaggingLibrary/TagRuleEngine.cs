@@ -7,8 +7,14 @@ namespace TaggingLibrary
     using System.Collections.Immutable;
     using System.Linq;
 
+    /// <summary>
+    /// Provides lookup and analysis for a set of <see cref="TagRule">TagRules</see>.
+    /// </summary>
     public sealed class TagRuleEngine
     {
+        /// <summary>
+        /// Gets a string property that represents an abstract tag.
+        /// </summary>
         public const string AbstractProperty = "abstract";
 
         private readonly HashSet<string> abstractTags = new HashSet<string>();
@@ -20,6 +26,10 @@ namespace TaggingLibrary
         private readonly Dictionary<string, ImmutableHashSet<string>> specializationParentTotalMap = new Dictionary<string, ImmutableHashSet<string>>();
         private readonly ILookup<TagOperator, TagRule> tagRules;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TagRuleEngine"/> class.
+        /// </summary>
+        /// <param name="rules">The set of rules that the engine will use.</param>
         public TagRuleEngine(IEnumerable<TagRule> rules)
         {
             if (rules == null)
@@ -111,6 +121,11 @@ namespace TaggingLibrary
             }
         }
 
+        /// <summary>
+        /// Gets info for the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which information will be retrieved.</param>
+        /// <returns>A <see cref="TagInfo"/> object that contains info on the specified tag.</returns>
         public TagInfo this[string tag]
         {
             get
@@ -138,6 +153,11 @@ namespace TaggingLibrary
             }
         }
 
+        /// <summary>
+        /// Analyzes the specified set of tags and produces an <see cref="AnalysisResult"/>.
+        /// </summary>
+        /// <param name="tags">The set of tags to analyze.</param>
+        /// <returns>The result of the analysis.</returns>
         public AnalysisResult Analyze(IEnumerable<string> tags)
         {
             var normalizedTags = ImmutableHashSet.CreateRange(tags.Select(this.Rename));
@@ -240,9 +260,21 @@ namespace TaggingLibrary
                 suggestedTags);
         }
 
+        /// <summary>
+        /// Enumerates the properties and inherited properties of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to enumerate properties.</param>
+        /// <returns>An enumerable collection of string properties.</returns>
+        /// <remarks>As this enumerates properties from multiple rules, it may contain duplicates.</remarks>
         public IEnumerable<string> GetAllTagProperties(string tag) =>
             this.GetTagProperties(tag).Concat(this.GetInheritedTagProperties(tag));
 
+        /// <summary>
+        /// Enumerates the inherited properties of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to enumerate properties.</param>
+        /// <returns>An enumerable collection of string properties.</returns>
+        /// <remarks>As this enumerates properties from multiple rules, it may contain duplicates.</remarks>
         public IEnumerable<string> GetInheritedTagProperties(string tag)
         {
             tag = this.Rename(tag);
@@ -288,33 +320,81 @@ namespace TaggingLibrary
             }
         }
 
+        /// <summary>
+        /// Gets an enumerable collection of known tags.
+        /// </summary>
+        /// <returns>A distinct, enumerable collection of known tags.</returns>
         public IEnumerable<string> GetKnownTags() =>
             this.tagRules.SelectMany(g => g).SelectMany(r => r.Operator == TagOperator.Property ? r.Left : r.Left.Concat(r.Right)).Select(this.Rename).Distinct();
 
+        /// <summary>
+        /// Gets the aliases for the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to fetch aliases.</param>
+        /// <returns>The aliases of the specified tag.</returns>
         public ImmutableHashSet<string> GetTagAliases(string tag) =>
             this.aliasMap.TryGetValue(this.Rename(tag), out var set) ? set : ImmutableHashSet<string>.Empty;
 
+        /// <summary>
+        /// Gets all ancestors of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to fetch ancestors.</param>
+        /// <returns>The ancestors of the specified tag.</returns>
         public ImmutableHashSet<string> GetTagAncestors(string tag) =>
             this.specializationParentTotalMap.TryGetValue(this.Rename(tag), out var set) ? set : ImmutableHashSet<string>.Empty;
 
+        /// <summary>
+        /// Gets the children of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to fetch children.</param>
+        /// <returns>The children of the specified tag.</returns>
         public ImmutableHashSet<string> GetTagChildren(string tag) =>
             this.specializationChildMap.TryGetValue(this.Rename(tag), out var set) ? set : ImmutableHashSet<string>.Empty;
 
+        /// <summary>
+        /// Gets all descendants of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to fetch descendants.</param>
+        /// <returns>The descendants of the specified tag.</returns>
         public ImmutableHashSet<string> GetTagDescendants(string tag) =>
             this.specializationChildTotalMap.TryGetValue(this.Rename(tag), out var set) ? set : ImmutableHashSet<string>.Empty;
 
+        /// <summary>
+        /// Gets the parents of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to fetch parents.</param>
+        /// <returns>The parents of the specified tag.</returns>
         public ImmutableHashSet<string> GetTagParents(string tag) =>
             this.specializationParentRuleMap.TryGetValue(this.Rename(tag), out var dict) ? ImmutableHashSet.CreateRange(dict.Keys) : ImmutableHashSet<string>.Empty;
 
+        /// <summary>
+        /// Enumerates the properties of the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag for which to enumerate properties.</param>
+        /// <returns>An enumerable collection of string properties.</returns>
+        /// <remarks>
+        /// <para>To enumerate inherited properties, use <see cref="GetInheritedTagProperties(string)"/> or <see cref="GetAllTagProperties(string)"/>.</para>
+        /// <para>As this enumerates properties from multiple rules, it may contain duplicates.</para>
+        /// </remarks>
         public IEnumerable<string> GetTagProperties(string tag)
         {
             tag = this.Rename(tag);
             return this.tagRules[TagOperator.Property].Where(t => t.Left.Contains(tag)).SelectMany(t => t.Right);
         }
 
+        /// <summary>
+        /// Applies rename rules to the specified tag.
+        /// </summary>
+        /// <param name="tag">The tag that may be renamed.</param>
+        /// <returns>The canonical form of the specified tag.</returns>
         public string Rename(string tag) =>
             this.renameMap.TryGetValue(tag, out var renamed) ? renamed : tag;
 
+        /// <summary>
+        /// Find all sets of tags that suggest the specified tag.
+        /// </summary>
+        /// <param name="target">The tag that is being suggested.</param>
+        /// <returns>An enumerable collecion of tag sets that suggest the specified tag.</returns>
         public IEnumerable<ImmutableHashSet<string>> TagSetsThatSuggest(string target) => this.tagRules[TagOperator.Suggestion].Where(r => r.Right.Contains(target)).Select(r => r.Left);
 
         private static void AddParentToChild(string fromTag, string toTag, TagRule rule, Dictionary<string, ImmutableDictionary<string, TagRule>> map)
