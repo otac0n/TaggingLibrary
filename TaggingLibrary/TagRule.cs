@@ -12,7 +12,7 @@ namespace TaggingLibrary
         /// <summary>
         /// Provides a lookup from <see cref="TagOperator"/> to <see cref="string"/>.
         /// </summary>
-        public static ImmutableDictionary<TagOperator, string> OperatorToStringLookup =
+        public static readonly ImmutableDictionary<TagOperator, string> OperatorToStringLookup =
             ImmutableDictionary<TagOperator, string>.Empty
                 .Add(TagOperator.Definition, "=>")
                 .Add(TagOperator.Implication, "->")
@@ -26,7 +26,7 @@ namespace TaggingLibrary
         /// <summary>
         /// Provides a lookup from <see cref="string"/> to <see cref="TagOperator"/>.
         /// </summary>
-        public static ImmutableDictionary<string, TagOperator> StringToOperatorLookup =
+        public static readonly ImmutableDictionary<string, TagOperator> StringToOperatorLookup =
             ImmutableDictionary<string, TagOperator>.Empty
                 .Add("=>", TagOperator.Definition)
                 .Add("->", TagOperator.Implication)

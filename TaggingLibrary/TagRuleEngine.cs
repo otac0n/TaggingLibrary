@@ -395,7 +395,8 @@ namespace TaggingLibrary
         /// </summary>
         /// <param name="target">The tag that is being suggested.</param>
         /// <returns>An enumerable collecion of tag sets that suggest the specified tag.</returns>
-        public IEnumerable<ImmutableHashSet<string>> TagSetsThatSuggest(string target) => this.tagRules[TagOperator.Suggestion].Where(r => r.Right.Contains(target)).Select(r => r.Left);
+        public IEnumerable<ImmutableHashSet<string>> TagSetsThatSuggest(string target) =>
+            this.tagRules[TagOperator.Suggestion].Where(r => r.Right.Contains(target)).Select(r => r.Left);
 
         private static void AddParentToChild(string fromTag, string toTag, TagRule rule, Dictionary<string, ImmutableDictionary<string, TagRule>> map)
         {

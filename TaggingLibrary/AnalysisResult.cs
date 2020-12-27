@@ -12,7 +12,7 @@ namespace TaggingLibrary
         /// <summary>
         /// Gets an empty set of analysis results.
         /// </summary>
-        public static AnalysisResult Empty = new AnalysisResult(
+        public static readonly AnalysisResult Empty = new AnalysisResult(
             ImmutableHashSet<string>.Empty,
             ImmutableHashSet<string>.Empty,
             ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty,
