@@ -1,5 +1,5 @@
 @namespace TaggingLibrary
-@classname TagRulesGrammar
+@classname TagRulesParser
 @using System.Linq
 @using System.Collections.Immutable
 

@@ -21,5 +21,6 @@
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
     <AdditionalFiles Include="TaggingLibrary.ruleset" />
+    <PegGrammar Include="TagRulesParser.peg" />
   </ItemGroup>
 </Project>
