@@ -208,7 +208,7 @@ namespace TaggingLibrary
                              where !rule.Right.Overlaps(effectiveAndSingleMissingTags)
                              let effectiveRight = rule.Right.Except(effectiveExcluded)
                              where effectiveRight.Count > 0
-                             group (rule, effectiveRight) by effectiveRight.Count == 1 into g
+                             group new { Rule = rule, Right = effectiveRight } by effectiveRight.Count == 1 into g
                              orderby g.Key descending
                              select g;
                 var firstGroup = groups.FirstOrDefault();
@@ -216,7 +216,8 @@ namespace TaggingLibrary
                 {
                     foreach (var pair in firstGroup)
                     {
-                        var (rule, effectiveRight) = pair;
+                        var rule = pair.Rule;
+                        var effectiveRight = pair.Right;
                         missingTagSets = missingTagSets.Add(RuleResult.Create(rule, effectiveRight));
                         if (effectiveRight.Count == 1)
                         {
