@@ -137,6 +137,30 @@ namespace TaggingLibrary.Tests
         }
 
         [Fact]
+        public void Analyze_WithAnExcludedTag_DoesNotIncludeTheExcludedTagInMissingTagSets()
+        {
+            var parser = new TagRulesParser();
+            var rules = parser.Parse(Resources.Music);
+            var engine = new TagRuleEngine(rules);
+
+            var results = engine.Analyze(new[] { "rock", "instrumental" });
+
+            Assert.DoesNotContain(results.MissingTagSets, s => s.Result.Contains("vocals"));
+        }
+
+        [Fact]
+        public void Analyze_WithAnExcludedTag_DoesNotIncludeTheExcludedTagInSuggestedTags()
+        {
+            var parser = new TagRulesParser();
+            var rules = parser.Parse(Resources.Music);
+            var engine = new TagRuleEngine(rules);
+
+            var results = engine.Analyze(new[] { "rock", "instrumental" });
+
+            Assert.DoesNotContain(results.SuggestedTags, s => s.Result == "vocals");
+        }
+
+        [Fact]
         public void Analyze_WithARejectedExistingTag_IncludesTheExistingTagInTheExistingRejectedTags()
         {
             var parser = new TagRulesParser();

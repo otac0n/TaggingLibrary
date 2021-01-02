@@ -93,5 +93,22 @@ namespace TaggingLibrary.Tests.Properties {
                 return ResourceManager.GetString("Animals", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to genre [abstract]
+        ///instrument [abstract]
+        ///string-instrument &amp; wind-instrument &amp; precussion-instrument &amp; electronic-instrument &amp; keyboard-instrument :: instrument [abstract]
+        ///brass-instrument &amp; woodwind-instrument :: wind-instrument [abstract]
+        ///reed-instrument :: woodwind-instrument [abstract]
+        ///single-reed-instrument &amp; double-reed-instrument :: reed-instrument [abstract]
+        ///slide-brass &amp; valved-brass :: brass-instrument [abstract]
+        ///flute :: woodwind-instrument
+        ///whistle &amp; gemshort &amp; flageolet &amp; recorder &amp; tonett [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Music {
+            get {
+                return ResourceManager.GetString("Music", resourceCulture);
+            }
+        }
     }
 }

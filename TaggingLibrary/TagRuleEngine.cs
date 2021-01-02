@@ -172,6 +172,31 @@ namespace TaggingLibrary
             var effectiveRejected = this.GetTagsAndDescendants(normalizedRejected);
             var existingRejectedTags = normalizedTags.Intersect(effectiveRejected);
 
+            var violatedExclusions = ImmutableList<TagRule>.Empty;
+            var singleExcluded = ImmutableHashSet.CreateBuilder<string>();
+            foreach (var rule in this.tagRules[TagOperator.Exclusion])
+            {
+                if (effectiveTags.IsSupersetOf(rule.Left))
+                {
+                    if (rule.Right.Count == 1)
+                    {
+                        singleExcluded.Add(rule.Right.Single());
+                    }
+
+                    var exceptEffective = rule.Right.Except(effectiveTags);
+                    if (exceptEffective.Count == 0)
+                    {
+                        violatedExclusions = violatedExclusions.Add(rule);
+                    }
+                    else if (exceptEffective.Count == 1)
+                    {
+                        singleExcluded.Add(exceptEffective.Single());
+                    }
+                }
+            }
+
+            var effectiveExcluded = this.GetTagsAndDescendants(singleExcluded).Union(effectiveRejected);
+
             var missingTagSets = ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty;
             var effectiveAndSingleMissingTags = new HashSet<string>(effectiveTags);
             var changed = true;
@@ -181,7 +206,7 @@ namespace TaggingLibrary
                 var groups = from rule in this.tagRules[TagOperator.Implication]
                              where effectiveAndSingleMissingTags.IsSupersetOf(rule.Left)
                              where !rule.Right.Overlaps(effectiveAndSingleMissingTags)
-                             let effectiveRight = rule.Right.Except(effectiveRejected)
+                             let effectiveRight = rule.Right.Except(effectiveExcluded)
                              where effectiveRight.Count > 0
                              group (rule, effectiveRight) by effectiveRight.Count == 1 into g
                              orderby g.Key descending
@@ -216,7 +241,7 @@ namespace TaggingLibrary
             {
                 if (effectiveAndSingleMissingTags.IsSupersetOf(rule.Left) && !effectiveAndSingleMissingTags.Overlaps(rule.Right))
                 {
-                    var effectiveRight = rule.Right.Except(effectiveRejected);
+                    var effectiveRight = rule.Right.Except(effectiveExcluded);
                     suggestedTags = suggestedTags.Union(effectiveRight.Select(c => RuleResult.Create(rule, c)));
                 }
             }
@@ -242,7 +267,7 @@ namespace TaggingLibrary
                     this.specializationChildTotalMap.TryGetValue(r.Result, out var children);
                     return children == null
                         ? Enumerable.Empty<RuleResult<string>>()
-                        : children.Where(c => !this.abstractTags.Contains(c)).Select(c => RuleResult.Create(r.Rule, c));
+                        : children.Where(c => !this.abstractTags.Contains(c) && !effectiveExcluded.Contains(c)).Select(c => RuleResult.Create(r.Rule, c));
                 }
                 else
                 {
@@ -256,6 +281,7 @@ namespace TaggingLibrary
                 normalizedTags,
                 effectiveTags,
                 existingRejectedTags,
+                violatedExclusions,
                 missingTagSets,
                 suggestedTags);
         }
@@ -522,10 +548,11 @@ namespace TaggingLibrary
                 }
 
                 if (rule.Operator == TagOperator.BidirectionalImplication ||
-                    rule.Operator == TagOperator.BidirectionalSuggestion)
+                    rule.Operator == TagOperator.BidirectionalSuggestion ||
+                    rule.Operator == TagOperator.MutualExclusion)
                 {
-                    var singleDirection = (TagOperator)((int)r.Operator + 1);
-                    yield return new TagRule(r.Left, singleDirection, r.Right);
+                    var singleDirection = (TagOperator)((int)rule.Operator + 1);
+                    yield return new TagRule(rule.Left, singleDirection, rule.Right);
                     foreach (var newLeft in rule.Right)
                     {
                         foreach (var newRight in rule.Left)

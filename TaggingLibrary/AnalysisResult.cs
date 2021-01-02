@@ -16,6 +16,7 @@ namespace TaggingLibrary
             ImmutableHashSet<string>.Empty,
             ImmutableHashSet<string>.Empty,
             ImmutableHashSet<string>.Empty,
+            ImmutableList<TagRule>.Empty,
             ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty,
             ImmutableHashSet<RuleResult<string>>.Empty);
 
@@ -25,18 +26,21 @@ namespace TaggingLibrary
         /// <param name="normalizedTags">The set of normalized tags from the analysis.</param>
         /// <param name="effectiveTags">The effective tags from the analysis.</param>
         /// <param name="existingRejectedTags">The set of normalized tags from the analysis that are also rejected.</param>
+        /// <param name="violatedExclusions">The set of exclusion rules voilated by the effective tags.</param>
         /// <param name="missingTagSets">The sets of missing tags from the analysis.</param>
         /// <param name="suggestedTags">The suggested tags from the analysis.</param>
         public AnalysisResult(
             ImmutableHashSet<string> normalizedTags,
             ImmutableHashSet<string> effectiveTags,
             ImmutableHashSet<string> existingRejectedTags,
+            ImmutableList<TagRule> violatedExclusions,
             ImmutableList<RuleResult<ImmutableHashSet<string>>> missingTagSets,
             ImmutableHashSet<RuleResult<string>> suggestedTags)
         {
             this.NormalizedTags = normalizedTags;
             this.EffectiveTags = effectiveTags;
             this.ExistingRejectedTags = existingRejectedTags;
+            this.ViolatedExclusions = violatedExclusions;
             this.MissingTagSets = missingTagSets;
             this.SuggestedTags = suggestedTags;
         }
@@ -65,5 +69,10 @@ namespace TaggingLibrary
         /// Gets the suggested tags from the analysis.
         /// </summary>
         public ImmutableHashSet<RuleResult<string>> SuggestedTags { get; }
+
+        /// <summary>
+        /// Gets the set of exclusion rules voilated by the effective tags.
+        /// </summary>
+        public ImmutableList<TagRule> ViolatedExclusions { get; }
     }
 }

@@ -1,0 +1,113 @@
+genre [abstract]
+instrument [abstract]
+string-instrument & wind-instrument & precussion-instrument & electronic-instrument & keyboard-instrument :: instrument [abstract]
+brass-instrument & woodwind-instrument :: wind-instrument [abstract]
+reed-instrument :: woodwind-instrument [abstract]
+single-reed-instrument & double-reed-instrument :: reed-instrument [abstract]
+slide-brass & valved-brass :: brass-instrument [abstract]
+flute :: woodwind-instrument
+whistle & gemshort & flageolet & recorder & tonette & fujara & ocarina :: flute
+tin-whistle :: whistle
+clarinet & saxophone & hornpipe :: single-reed-instrument
+oboe & bassoon & duduk & piri :: double-reed-instrument
+trombone :: slide-brass
+trumpet & tuba & french-horn :: valved-brass
+didgeridoo & vuvuzela :: brass-instrument
+guitar :: string-instrument
+bass-guitar :: guitar
+vocals :: instrument
+theremin :: electronic-instrument
+piano :: string-instrument
+acoustic-piano :: piano
+grand-piano & upright-piano :: acoustic-piano
+electric-keyboard :: keyboard-instrument
+electric-piano :: piano
+electric-piano :: electric-keyboard
+baby-grand & parlor-grand & concert-grand :: grand-piano
+player-piano :: upright-piano
+organ & piano :: keyboard-instrument
+electronic-keyboard :: keyboard-instrument
+electronic-keyboard :: electronic-instrument
+synthesizer :: electronic-keyboard
+keytar :: electronic-keyboard
+organ :: wind-instrument
+pipe-organ & electronic-organ & pump-organ :: organ
+pump-organ :: reed-instrument
+melodeon & harmonium & reed-organ & accordion :: pump-organ
+
+jazz :: genre
+rock :: genre
+pop :: genre
+opera :: genre
+hip-hop :: genre
+funk :: genre
+folk :: genre
+musical-theatre :: genre
+
+alt-rock & punk-rock :: rock
+pop-punk :: pop
+pop-punk :: punk
+folk-rock :: folk
+folk-rock :: rock
+grunge :: alt-rock
+grunge :: punk
+industrial :: rock
+industrial :: electronic
+ska :: pop
+ska-jazz :: ska
+ska-jazz :: jazz
+ska-pop :: ska
+ska-pop :: pop
+ska-punk :: ska
+ska-punk :: punk
+
+opera :: live-performance
+musical-number :: live-performance
+musical-number :: song
+musical-number -> musical-theatre
+live-performance ~> cheering
+cheering :: audience-participation
+heckling :: audience-participation
+booing & hissing :: heckling
+audience-chorus :: audience-participation
+audience-chorus :: chorus
+chorus :: vocals
+choir :: chorus
+
+vocoder :: effect
+voice-box :: effect
+effect -> instrument
+voice-box -> guitar
+voice-box -> vocals
+vocoder -> vocals
+
+instrumental :: song
+opera -> vocals
+instrumental <!> voice
+antiphony -> vocals
+song -> genre
+song -> instrument
+
+ska -> brass
+ska -> precussion
+rock -> guitar
+rock -> precussion
+rock -> vocals
+
+sax => saxophone
+bass => bass-guitar
+baby-grand-piano => baby-grand
+parlor-grand-piano => parlor-grand
+boudoir-grand => parlor-grand
+boudoir-grand-piano => boudoir-grand
+concert-grand-piano => concert-grand
+voice => vocals
+rap => hip-hop
+brass => brass-instrument
+punk => punk-rock
+alternative => alt-rock
+electronica => electronic
+keyboard => electronic-keyboard
+synth => synthesizer
+precussion => precussion-instrument
+crowd-participation => audience-participation
