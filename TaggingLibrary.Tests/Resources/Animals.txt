@@ -1,0 +1,25 @@
+object [abstract]
+animal :: object [abstract]
+mammal :: animal
+dog & cat :: mammal
+dolphin :: whale
+whale :: mammal
+
+fur :: hair
+whiskers :: hair
+mammal -> hair
+
+tail :: appendage
+appendage -> animal
+
+dog ~> tail
+dog -> fur
+
+cat -> tail
+cat -> whiskers
+cat ~> fur
+
+whale ~> whiskers
+
+feline => cat
+canine => dog
