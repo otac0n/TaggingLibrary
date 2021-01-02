@@ -157,25 +157,20 @@ namespace TaggingLibrary
         /// Analyzes the specified set of tags and produces an <see cref="AnalysisResult"/>.
         /// </summary>
         /// <param name="tags">The set of tags to analyze.</param>
+        /// <param name="rejected">The set of rejected tags to consider.</param>
         /// <returns>The result of the analysis.</returns>
-        public AnalysisResult Analyze(IEnumerable<string> tags)
+        public AnalysisResult Analyze(IEnumerable<string> tags, IEnumerable<string> rejected = null)
         {
             var normalizedTags = ImmutableHashSet.CreateRange(tags.Select(this.Rename));
-            if (normalizedTags.Count == 0)
+            var effectiveTags = this.GetTagsAndAncestors(normalizedTags);
+            if (effectiveTags.Count == 0)
             {
                 return AnalysisResult.Empty;
             }
 
-            var ruleLookup = this.tagRules;
-
-            var effectiveTags = normalizedTags;
-            foreach (var tag in effectiveTags)
-            {
-                if (this.specializationParentTotalMap.TryGetValue(tag, out var specializes))
-                {
-                    effectiveTags = effectiveTags.Union(specializes);
-                }
-            }
+            var normalizedRejected = ImmutableHashSet.CreateRange((rejected ?? Enumerable.Empty<string>()).Select(this.Rename));
+            var effectiveRejected = this.GetTagsAndDescendants(normalizedRejected);
+            var existingRejectedTags = normalizedTags.Intersect(effectiveRejected);
 
             var missingTagSets = ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty;
             var effectiveAndSingleMissingTags = new HashSet<string>(effectiveTags);
@@ -183,21 +178,24 @@ namespace TaggingLibrary
             while (changed)
             {
                 changed = false;
-                var groups = from rule in ruleLookup[TagOperator.Implication]
+                var groups = from rule in this.tagRules[TagOperator.Implication]
                              where effectiveAndSingleMissingTags.IsSupersetOf(rule.Left)
                              where !rule.Right.Overlaps(effectiveAndSingleMissingTags)
-                             group rule by rule.Right.Count == 1 into g
+                             let effectiveRight = rule.Right.Except(effectiveRejected)
+                             where effectiveRight.Count > 0
+                             group (rule, effectiveRight) by effectiveRight.Count == 1 into g
                              orderby g.Key descending
                              select g;
                 var firstGroup = groups.FirstOrDefault();
                 if (firstGroup != null)
                 {
-                    foreach (var rule in firstGroup)
+                    foreach (var pair in firstGroup)
                     {
-                        missingTagSets = missingTagSets.Add(RuleResult.Create(rule, rule.Right));
-                        if (rule.Right.Count == 1)
+                        var (rule, effectiveRight) = pair;
+                        missingTagSets = missingTagSets.Add(RuleResult.Create(rule, effectiveRight));
+                        if (effectiveRight.Count == 1)
                         {
-                            var right = rule.Right.Single();
+                            var right = effectiveRight.Single();
                             if (effectiveAndSingleMissingTags.Add(right))
                             {
                                 if (this.specializationParentTotalMap.TryGetValue(right, out var specializes))
@@ -214,11 +212,12 @@ namespace TaggingLibrary
             }
 
             var suggestedTags = ImmutableHashSet.CreateRange(missingTagSets.SelectMany(s => s.Result.Select(c => RuleResult.Create(s.Rule, c))));
-            foreach (var rule in ruleLookup[TagOperator.Suggestion])
+            foreach (var rule in this.tagRules[TagOperator.Suggestion])
             {
                 if (effectiveAndSingleMissingTags.IsSupersetOf(rule.Left) && !effectiveAndSingleMissingTags.Overlaps(rule.Right))
                 {
-                    suggestedTags = suggestedTags.Union(rule.Right.Select(c => RuleResult.Create(rule, c)));
+                    var effectiveRight = rule.Right.Except(effectiveRejected);
+                    suggestedTags = suggestedTags.Union(effectiveRight.Select(c => RuleResult.Create(rule, c)));
                 }
             }
 
@@ -256,6 +255,7 @@ namespace TaggingLibrary
             return new AnalysisResult(
                 normalizedTags,
                 effectiveTags,
+                existingRejectedTags,
                 missingTagSets,
                 suggestedTags);
         }
@@ -464,6 +464,38 @@ namespace TaggingLibrary
                     }
                 }
             }
+        }
+
+        private ImmutableHashSet<string> GetTagsAndAncestors(IEnumerable<string> tags)
+        {
+            var tagsAndAncestors = ImmutableHashSet.CreateBuilder<string>();
+
+            foreach (var tag in tags)
+            {
+                tagsAndAncestors.Add(tag);
+                if (this.specializationParentTotalMap.TryGetValue(tag, out var specializes))
+                {
+                    tagsAndAncestors.UnionWith(specializes);
+                }
+            }
+
+            return tagsAndAncestors.ToImmutable();
+        }
+
+        private ImmutableHashSet<string> GetTagsAndDescendants(IEnumerable<string> tags)
+        {
+            var tagsAndDescendants = ImmutableHashSet.CreateBuilder<string>();
+
+            foreach (var tag in tags)
+            {
+                tagsAndDescendants.Add(tag);
+                if (this.specializationChildTotalMap.TryGetValue(tag, out var children))
+                {
+                    tagsAndDescendants.UnionWith(children);
+                }
+            }
+
+            return tagsAndDescendants.ToImmutable();
         }
 
         private IEnumerable<TagRule> SimplifyRules(IEnumerable<TagRule> rules)

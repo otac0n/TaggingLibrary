@@ -15,6 +15,7 @@ namespace TaggingLibrary
         public static readonly AnalysisResult Empty = new AnalysisResult(
             ImmutableHashSet<string>.Empty,
             ImmutableHashSet<string>.Empty,
+            ImmutableHashSet<string>.Empty,
             ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty,
             ImmutableHashSet<RuleResult<string>>.Empty);
 
@@ -23,16 +24,19 @@ namespace TaggingLibrary
         /// </summary>
         /// <param name="normalizedTags">The set of normalized tags from the analysis.</param>
         /// <param name="effectiveTags">The effective tags from the analysis.</param>
+        /// <param name="existingRejectedTags">The set of normalized tags from the analysis that are also rejected.</param>
         /// <param name="missingTagSets">The sets of missing tags from the analysis.</param>
         /// <param name="suggestedTags">The suggested tags from the analysis.</param>
         public AnalysisResult(
             ImmutableHashSet<string> normalizedTags,
             ImmutableHashSet<string> effectiveTags,
+            ImmutableHashSet<string> existingRejectedTags,
             ImmutableList<RuleResult<ImmutableHashSet<string>>> missingTagSets,
             ImmutableHashSet<RuleResult<string>> suggestedTags)
         {
             this.NormalizedTags = normalizedTags;
             this.EffectiveTags = effectiveTags;
+            this.ExistingRejectedTags = existingRejectedTags;
             this.MissingTagSets = missingTagSets;
             this.SuggestedTags = suggestedTags;
         }
@@ -41,6 +45,11 @@ namespace TaggingLibrary
         /// Gets the effective tags from the analysis.
         /// </summary>
         public ImmutableHashSet<string> EffectiveTags { get; }
+
+        /// <summary>
+        /// Gets the set of normalized tags from the analysis that are also rejected.
+        /// </summary>
+        public ImmutableHashSet<string> ExistingRejectedTags { get; }
 
         /// <summary>
         /// Gets the sets of missing tags from the analysis.

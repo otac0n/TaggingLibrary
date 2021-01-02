@@ -137,6 +137,42 @@ namespace TaggingLibrary.Tests
         }
 
         [Fact]
+        public void Analyze_WithARejectedExistingTag_IncludesTheExistingTagInTheExistingRejectedTags()
+        {
+            var parser = new TagRulesParser();
+            var rules = parser.Parse(Resources.Animals);
+            var engine = new TagRuleEngine(rules);
+
+            var results = engine.Analyze(new[] { "cat" }, new[] { "mammal" });
+
+            Assert.Contains(results.ExistingRejectedTags, t => t == "cat");
+        }
+
+        [Fact]
+        public void Analyze_WithARejectedMissingTag_DoesNotIncludeTheRejectedTagInMissingTagSets()
+        {
+            var parser = new TagRulesParser();
+            var rules = parser.Parse(Resources.Animals);
+            var engine = new TagRuleEngine(rules);
+
+            var results = engine.Analyze(new[] { "cat" }, new[] { "hair" });
+
+            Assert.DoesNotContain(results.MissingTagSets, s => s.Result.Contains("hair"));
+        }
+
+        [Fact]
+        public void Analyze_WithARejecteSuggestedTag_DoesNotIncludeTheRejectedTagInSuggestedTags()
+        {
+            var parser = new TagRulesParser();
+            var rules = parser.Parse(Resources.Animals);
+            var engine = new TagRuleEngine(rules);
+
+            var results = engine.Analyze(new[] { "whale" }, new[] { "hair" });
+
+            Assert.DoesNotContain(results.SuggestedTags, s => s.Result == "whiskers");
+        }
+
+        [Fact]
         public void Analyze_WithATagAlias_ReplacesTheAliasWithTheCanonicalTagInEffectiveTags()
         {
             var parser = new TagRulesParser();
