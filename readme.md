@@ -67,6 +67,7 @@ Tag Operators
 * `<~>` (Bidirectional Suggestion) A bidirectional form of suggestion. See below. All tags on the right also suggest each tag on the left.
 * `!>` (Exclusion) The tags on the left together exclude some tag on the right.
 * `<!>` (Mutual Exclusion) A mutual form of exclusion. See below. All tags on the right also exclude each tag on the left.
+* `=>` (Definition) Adds an alias. No bidirectional form is provided. If a circular reference is discovered, the tie is broken lexicographically.
 
 When it makes sense, the left side of operators is allowed to be expressed as a conjunction and the right side is allowed to be expressed as a disjunction. For example:
 
