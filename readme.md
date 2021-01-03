@@ -109,6 +109,8 @@ API
     * `GetTagChildren` / `GetTagParents` / `GetTagDescendants` / `GetTagAncestors` - Provides sets of tags allowing the traversal of the tag specialization map.
     * `GetTagProperties` / `GetInheritedTagProperties` / `GetAllTagProperties` - Enumerates the properties for the specified tag.
     * `GetKnownTags` - Enumerates all known tags.
+    * `NormalizeRules` - Renames all tags according to defninition rules (`=>`). The `TagRuleEngine` will call this method automatically when constructed.
+    * `SimplifyRules` - Performs the above mentioned rule expansion steps to remove bidirectional rules (`<->`, `<~>`, `<!>`) from the set rules. The `TagRuleEngine` will call this method automatically when constructed.
 * `TagInfo` - Describes the indexed state of a single tag.
     * `Children` / `Parents` / `Descendants` / `Ancestors` - Provides sets of tags allowing the traversal of the tag specialization map.
     * `Properties` - Enumerates all properties for the tag.

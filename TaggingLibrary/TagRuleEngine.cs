@@ -92,7 +92,7 @@ namespace TaggingLibrary
                 AddParentToChild(target, rename.Key, this.aliasMap);
             }
 
-            this.tagRules = this.SimplifyRules(rules).ToLookup(r => r.Operator);
+            this.tagRules = TagRuleEngine.SimplifyRules(this.NormalizeRules(rules)).ToLookup(r => r.Operator);
 
             foreach (var rule in this.tagRules[TagOperator.Property])
             {
@@ -150,6 +150,41 @@ namespace TaggingLibrary
                     children: children ?? ImmutableHashSet<string>.Empty,
                     ancestors: ancestors ?? ImmutableHashSet<string>.Empty,
                     descendants: descendants ?? ImmutableHashSet<string>.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Simplifies the specified set of rules by expanding bidirectional rules.
+        /// </summary>
+        /// <param name="rules">The set of rules to simplify.</param>
+        /// <returns>The simplified set of rules, with bidirectional rules expanded.</returns>
+        public static IEnumerable<TagRule> SimplifyRules(IEnumerable<TagRule> rules)
+        {
+            if (rules == null)
+            {
+                throw new ArgumentNullException(nameof(rules));
+            }
+
+            foreach (var rule in rules)
+            {
+                if (rule.Operator == TagOperator.BidirectionalImplication ||
+                    rule.Operator == TagOperator.BidirectionalSuggestion ||
+                    rule.Operator == TagOperator.MutualExclusion)
+                {
+                    var singleDirection = (TagOperator)((int)rule.Operator + 1);
+                    yield return new TagRule(rule.Left, singleDirection, rule.Right);
+                    foreach (var newLeft in rule.Right)
+                    {
+                        foreach (var newRight in rule.Left)
+                        {
+                            yield return new TagRule(newLeft, singleDirection, newRight);
+                        }
+                    }
+                }
+                else
+                {
+                    yield return rule;
+                }
             }
         }
 
@@ -410,6 +445,38 @@ namespace TaggingLibrary
         }
 
         /// <summary>
+        /// Renames rules according the canonical form for the configured rules.
+        /// </summary>
+        /// <param name="rules">The set of rules to normalize.</param>
+        /// <returns>The normalized set of rules, with all rules renamed to their canoical form.</returns>
+        public IEnumerable<TagRule> NormalizeRules(IEnumerable<TagRule> rules)
+        {
+            if (rules == null)
+            {
+                throw new ArgumentNullException(nameof(rules));
+            }
+
+            foreach (var rule in rules)
+            {
+                if (rule.Operator != TagOperator.Definition)
+                {
+                    var replaceLeft = rule.Left.Any(this.renameMap.ContainsKey);
+                    var replaceRight = rule.Operator != TagOperator.Property && rule.Right.Any(this.renameMap.ContainsKey);
+                    if (replaceLeft || replaceRight)
+                    {
+                        yield return new TagRule(
+                            replaceLeft ? ImmutableHashSet.CreateRange(rule.Left.Select(this.Rename)) : rule.Left,
+                            rule.Operator,
+                            replaceRight ? ImmutableHashSet.CreateRange(rule.Right.Select(this.Rename)) : rule.Right);
+                        continue;
+                    }
+                }
+
+                yield return rule;
+            }
+        }
+
+        /// <summary>
         /// Applies rename rules to the specified tag.
         /// </summary>
         /// <param name="tag">The tag that may be renamed.</param>
@@ -523,50 +590,6 @@ namespace TaggingLibrary
             }
 
             return tagsAndDescendants.ToImmutable();
-        }
-
-        private IEnumerable<TagRule> SimplifyRules(IEnumerable<TagRule> rules)
-        {
-            foreach (var r in rules)
-            {
-                if (r.Operator == TagOperator.Definition)
-                {
-                    yield return r;
-                    continue;
-                }
-
-                TagRule rule;
-                if (r.Left.Any(this.renameMap.ContainsKey) || (r.Operator != TagOperator.Property && r.Right.Any(this.renameMap.ContainsKey)))
-                {
-                    rule = new TagRule(
-                        ImmutableHashSet.CreateRange(r.Left.Select(this.Rename)),
-                        r.Operator,
-                        r.Operator != TagOperator.Property ? ImmutableHashSet.CreateRange(r.Right.Select(this.Rename)) : r.Right);
-                }
-                else
-                {
-                    rule = r;
-                }
-
-                if (rule.Operator == TagOperator.BidirectionalImplication ||
-                    rule.Operator == TagOperator.BidirectionalSuggestion ||
-                    rule.Operator == TagOperator.MutualExclusion)
-                {
-                    var singleDirection = (TagOperator)((int)rule.Operator + 1);
-                    yield return new TagRule(rule.Left, singleDirection, rule.Right);
-                    foreach (var newLeft in rule.Right)
-                    {
-                        foreach (var newRight in rule.Left)
-                        {
-                            yield return new TagRule(newLeft, singleDirection, newRight);
-                        }
-                    }
-                }
-                else
-                {
-                    yield return rule;
-                }
-            }
         }
     }
 }
