@@ -7,8 +7,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <Description>A library for providing tagging suggestions for documents, music, photos, etc.</Description>
+    <PackageIconUrl>
+      <!-- TODO: Add Icon URL -->
+    </PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/otac0n/TaggingLibrary</PackageProjectUrl>
+    <PackageTags>tagging; search; suggestions; knowledge base; knowledge graph; inference engine</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FixMe" Version="1.0.0" PrivateAssets="All" />
