@@ -289,6 +289,7 @@ namespace TaggingLibrary
                 {
                     suggestedTags = suggestedTags.Union(
                         from child in children
+                        where !this.abstractTags.Contains(child) && !effectiveExcluded.Contains(child)
                         from directParent in this.specializationParentRuleMap[child]
                         let parentTag = directParent.Key
                         where parentTag == tag || (this.specializationParentTotalMap.TryGetValue(parentTag, out var grandparents) && grandparents.Contains(tag))
