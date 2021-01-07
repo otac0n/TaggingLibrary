@@ -2,6 +2,9 @@
 
 namespace TaggingLibrary
 {
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+
     /// <summary>
     /// Provides a generic way to commuicate that a certain result is derrived by a specified rule.
     /// </summary>
@@ -11,11 +14,11 @@ namespace TaggingLibrary
         /// <summary>
         /// Initializes a new instance of the <see cref="RuleResult{TResult}"/> class.
         /// </summary>
-        /// <param name="rule">The rule that is responsible for the included result.</param>
+        /// <param name="rules">The rules that are responsible for the included result.</param>
         /// <param name="result">The result that derrived by the specified rule.</param>
-        public RuleResult(TagRule rule, TResult result)
+        public RuleResult(IEnumerable<TagRule> rules, TResult result)
         {
-            this.Rule = rule;
+            this.Rules = ImmutableList.CreateRange(rules);
             this.Result = result;
         }
 
@@ -27,6 +30,6 @@ namespace TaggingLibrary
         /// <summary>
         /// Gets the rule that is responsible for the included result.
         /// </summary>
-        public TagRule Rule { get; }
+        public ImmutableList<TagRule> Rules { get; }
     }
 }

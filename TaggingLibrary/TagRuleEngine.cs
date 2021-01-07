@@ -272,7 +272,7 @@ namespace TaggingLibrary
                 }
             }
 
-            var suggestedTags = ImmutableHashSet.CreateRange(missingTagSets.SelectMany(s => s.Result.Select(c => RuleResult.Create(s.Rule, c))));
+            var suggestedTags = ImmutableHashSet.CreateRange(missingTagSets.SelectMany(s => s.Result.Select(c => RuleResult.Create(s.Rules, c))));
             foreach (var rule in this.tagRules[TagOperator.Suggestion])
             {
                 if (effectiveAndSingleMissingTags.IsSupersetOf(rule.Left) && !effectiveAndSingleMissingTags.Overlaps(rule.Right))
@@ -304,7 +304,7 @@ namespace TaggingLibrary
                     this.specializationChildTotalMap.TryGetValue(r.Result, out var children);
                     return children == null
                         ? Enumerable.Empty<RuleResult<string>>()
-                        : children.Where(c => !this.abstractTags.Contains(c) && !effectiveExcluded.Contains(c)).Select(c => RuleResult.Create(r.Rule, c));
+                        : children.Where(c => !this.abstractTags.Contains(c) && !effectiveExcluded.Contains(c)).Select(c => RuleResult.Create(r.Rules, c));
                 }
                 else
                 {
