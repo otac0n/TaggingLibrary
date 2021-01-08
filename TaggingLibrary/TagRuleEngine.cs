@@ -386,9 +386,19 @@ namespace TaggingLibrary
         /// <summary>
         /// Gets an enumerable collection of known tags.
         /// </summary>
+        /// <param name="canonicalOnly"><c>true</c>, to only return canonical forms. <c>false</c> to return all forms of the tags.</param>
         /// <returns>A distinct, enumerable collection of known tags.</returns>
-        public IEnumerable<string> GetKnownTags() =>
-            this.tagRules.SelectMany(g => g).SelectMany(r => r.Operator == TagOperator.Property ? r.Left : r.Left.Concat(r.Right)).Select(this.Rename).Distinct();
+        public IEnumerable<string> GetKnownTags(bool canonicalOnly = false)
+        {
+            var tags = this.tagRules.SelectMany(g => g).SelectMany(r => r.Operator == TagOperator.Property ? r.Left : r.Left.Concat(r.Right));
+
+            if (canonicalOnly)
+            {
+                tags = tags.Select(this.Rename);
+            }
+
+            return tags.Distinct();
+        }
 
         /// <summary>
         /// Gets the aliases for the specified tag.
