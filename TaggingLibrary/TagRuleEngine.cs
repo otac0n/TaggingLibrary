@@ -303,8 +303,10 @@ namespace TaggingLibrary
 
             IEnumerable<RuleResult<string>> ExpandAbtractTags(RuleResult<string> result)
             {
-                if (this.abstractTags.ContainsKey(result.Result))
+                if (this.abstractTags.TryGetValue(result.Result, out var abstractRule))
                 {
+                    var sharedRules = result.Rules.Add(abstractRule);
+
                     var visited = new HashSet<string>();
                     var toVisit = new Queue<string>();
                     toVisit.Enqueue(result.Result);
@@ -319,7 +321,7 @@ namespace TaggingLibrary
                                 {
                                     if (!this.abstractTags.ContainsKey(child))
                                     {
-                                        yield return RuleResult.Create(result.Rules, child);
+                                        yield return RuleResult.Create(sharedRules, child);
                                     }
                                 }
                             }
