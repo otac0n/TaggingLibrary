@@ -272,13 +272,13 @@ namespace TaggingLibrary
                 }
             }
 
-            var suggestedTags = ImmutableHashSet.CreateRange(missingTagSets.SelectMany(s => s.Result.Select(c => RuleResult.Create(s.Rules, c))));
+            var suggestedTags = ImmutableList.CreateRange(missingTagSets.SelectMany(s => s.Result.Select(c => RuleResult.Create(s.Rules, c))));
             foreach (var rule in this.tagRules[TagOperator.Suggestion])
             {
                 if (effectiveAndSingleMissingTags.IsSupersetOf(rule.Left) && !effectiveAndSingleMissingTags.Overlaps(rule.Right))
                 {
                     var effectiveRight = rule.Right.Except(effectiveExcluded);
-                    suggestedTags = suggestedTags.Union(effectiveRight.Select(c => RuleResult.Create(rule, c)));
+                    suggestedTags = suggestedTags.AddRange(effectiveRight.Select(c => RuleResult.Create(rule, c)));
                 }
             }
 
@@ -287,7 +287,7 @@ namespace TaggingLibrary
                 if (this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
                     !effectiveAndSingleMissingTags.Overlaps(children))
                 {
-                    suggestedTags = suggestedTags.Union(
+                    suggestedTags = suggestedTags.AddRange(
                         from child in children
                         where !this.abstractTags.Contains(child) && !effectiveExcluded.Contains(child)
                         from directParent in this.specializationParentRuleMap[child]
@@ -297,7 +297,7 @@ namespace TaggingLibrary
                 }
             }
 
-            ImmutableHashSet<RuleResult<string>> ExpandAbstractTags(IEnumerable<RuleResult<string>> results) => ImmutableHashSet.CreateRange(results.SelectMany(r =>
+            ImmutableList<RuleResult<string>> ExpandAbstractTags(IEnumerable<RuleResult<string>> results) => ImmutableList.CreateRange(results.SelectMany(r =>
             {
                 if (this.abstractTags.Contains(r.Result))
                 {

@@ -18,7 +18,7 @@ namespace TaggingLibrary
             ImmutableHashSet<string>.Empty,
             ImmutableList<TagRule>.Empty,
             ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty,
-            ImmutableHashSet<RuleResult<string>>.Empty);
+            ImmutableList<RuleResult<string>>.Empty);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisResult"/> class.
@@ -35,7 +35,7 @@ namespace TaggingLibrary
             ImmutableHashSet<string> existingRejectedTags,
             ImmutableList<TagRule> violatedExclusions,
             ImmutableList<RuleResult<ImmutableHashSet<string>>> missingTagSets,
-            ImmutableHashSet<RuleResult<string>> suggestedTags)
+            ImmutableList<RuleResult<string>> suggestedTags)
         {
             this.NormalizedTags = normalizedTags;
             this.EffectiveTags = effectiveTags;
@@ -68,7 +68,7 @@ namespace TaggingLibrary
         /// <summary>
         /// Gets the suggested tags from the analysis.
         /// </summary>
-        public ImmutableHashSet<RuleResult<string>> SuggestedTags { get; }
+        public ImmutableList<RuleResult<string>> SuggestedTags { get; }
 
         /// <summary>
         /// Gets the set of exclusion rules voilated by the effective tags.
