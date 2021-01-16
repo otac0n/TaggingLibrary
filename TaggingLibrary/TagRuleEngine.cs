@@ -17,7 +17,7 @@ namespace TaggingLibrary
         /// </summary>
         public const string AbstractProperty = "abstract";
 
-        private readonly HashSet<string> abstractTags = new HashSet<string>();
+        private readonly Dictionary<string, TagRule> abstractTags = new Dictionary<string, TagRule>();
         private readonly Dictionary<string, ImmutableHashSet<string>> aliasMap = new Dictionary<string, ImmutableHashSet<string>>();
         private readonly Dictionary<string, string> renameMap = new Dictionary<string, string>();
         private readonly Dictionary<string, ImmutableHashSet<string>> specializationChildMap = new Dictionary<string, ImmutableHashSet<string>>();
@@ -101,7 +101,11 @@ namespace TaggingLibrary
                     switch (property)
                     {
                         case AbstractProperty:
-                            this.abstractTags.UnionWith(rule.Left);
+                            foreach (var left in rule.Left)
+                            {
+                                this.abstractTags[left] = rule;
+                            }
+
                             break;
                     }
                 }
@@ -143,7 +147,7 @@ namespace TaggingLibrary
                 this.aliasMap.TryGetValue(tag, out var aliases);
                 return new TagInfo(
                     tag: tag,
-                    isAbstract: this.abstractTags.Contains(tag),
+                    isAbstract: this.abstractTags.ContainsKey(tag),
                     aliases: aliases ?? ImmutableHashSet<string>.Empty,
                     properties: ImmutableList.CreateRange(this.tagRules[TagOperator.Property].Where(t => t.Left.Contains(tag)).SelectMany(t => t.Right)),
                     parents: ImmutableHashSet.CreateRange(parentsWithRules?.Keys ?? Enumerable.Empty<string>()),
@@ -289,7 +293,7 @@ namespace TaggingLibrary
                 {
                     suggestedTags = suggestedTags.AddRange(
                         from child in children
-                        where !this.abstractTags.Contains(child) && !effectiveExcluded.Contains(child)
+                        where !this.abstractTags.ContainsKey(child) && !effectiveExcluded.Contains(child)
                         from directParent in this.specializationParentRuleMap[child]
                         let parentTag = directParent.Key
                         where parentTag == tag || (this.specializationParentTotalMap.TryGetValue(parentTag, out var grandparents) && grandparents.Contains(tag))
@@ -299,7 +303,7 @@ namespace TaggingLibrary
 
             IEnumerable<RuleResult<string>> ExpandAbtractTags(RuleResult<string> result)
             {
-                if (this.abstractTags.Contains(result.Result))
+                if (this.abstractTags.ContainsKey(result.Result))
                 {
                     var visited = new HashSet<string>();
                     var toVisit = new Queue<string>();
@@ -313,7 +317,7 @@ namespace TaggingLibrary
                             {
                                 if (!effectiveExcluded.Contains(child))
                                 {
-                                    if (!this.abstractTags.Contains(child))
+                                    if (!this.abstractTags.ContainsKey(child))
                                     {
                                         yield return RuleResult.Create(result.Rules, child);
                                     }
