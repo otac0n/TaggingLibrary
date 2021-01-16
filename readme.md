@@ -40,7 +40,7 @@ Analyze a set of tags:
     Console.WriteLine($"Current Tags: {string.Join(", ", currentTags)}");
     foreach (var suggestion in analysis.SuggestedTags)
     {
-        Console.WriteLine($"    Suggestion: {suggestion.Result} (via {suggestion.Rule})");
+        Console.WriteLine($"    Suggestion: {suggestion.Result} (via {string.Join("; ", suggestion.Rules)})");
     }
 
 The output in this example is something like:
