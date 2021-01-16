@@ -297,22 +297,38 @@ namespace TaggingLibrary
                 }
             }
 
-            ImmutableList<RuleResult<string>> ExpandAbstractTags(IEnumerable<RuleResult<string>> results) => ImmutableList.CreateRange(results.SelectMany(r =>
+            IEnumerable<RuleResult<string>> ExpandAbtractTags(RuleResult<string> result)
             {
-                if (this.abstractTags.Contains(r.Result))
+                if (this.abstractTags.Contains(result.Result))
                 {
-                    this.specializationChildTotalMap.TryGetValue(r.Result, out var children);
-                    return children == null
-                        ? Enumerable.Empty<RuleResult<string>>()
-                        : children.Where(c => !this.abstractTags.Contains(c) && !effectiveExcluded.Contains(c)).Select(c => RuleResult.Create(r.Rules, c));
+                    var visited = new HashSet<string>();
+                    var toVisit = new Queue<string>();
+                    toVisit.Enqueue(result.Result);
+                    while (toVisit.Count > 0)
+                    {
+                        var tag = toVisit.Dequeue();
+                        if (visited.Add(tag) && this.specializationChildMap.TryGetValue(tag, out var children))
+                        {
+                            foreach (var child in children)
+                            {
+                                if (!effectiveExcluded.Contains(child))
+                                {
+                                    if (!this.abstractTags.Contains(child))
+                                    {
+                                        yield return RuleResult.Create(result.Rules, child);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 else
                 {
-                    return new[] { r };
+                    yield return result;
                 }
-            }));
+            }
 
-            suggestedTags = ExpandAbstractTags(suggestedTags);
+            suggestedTags = ImmutableList.CreateRange(suggestedTags.SelectMany(ExpandAbtractTags));
 
             return new AnalysisResult(
                 normalizedTags,
