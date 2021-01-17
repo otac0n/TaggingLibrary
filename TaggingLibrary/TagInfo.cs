@@ -131,5 +131,8 @@ namespace TaggingLibrary
 
             return tags;
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => this.Tag;
     }
 }

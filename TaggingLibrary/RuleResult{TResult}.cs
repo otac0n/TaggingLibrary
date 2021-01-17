@@ -4,11 +4,13 @@ namespace TaggingLibrary
 {
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Diagnostics;
 
     /// <summary>
     /// Provides a generic way to commuicate that a certain result is derrived by a specified rule.
     /// </summary>
     /// <typeparam name="TResult">The type of result that is implied by the rule.</typeparam>
+    [DebuggerDisplay("{Result} (via {RulesDisplay, nq})")]
     public class RuleResult<TResult>
     {
         /// <summary>
@@ -31,5 +33,7 @@ namespace TaggingLibrary
         /// Gets the rule that is responsible for the included result.
         /// </summary>
         public ImmutableList<TagRule> Rules { get; }
+
+        private string RulesDisplay => string.Join("; ", this.Rules);
     }
 }
