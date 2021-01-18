@@ -336,6 +336,8 @@ namespace TaggingLibrary
                                         yield return RuleResult.Create(sharedRules, child);
                                     }
                                 }
+
+                                toVisit.Enqueue(child);
                             }
                         }
                     }
