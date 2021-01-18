@@ -291,8 +291,7 @@ namespace TaggingLibrary
 
             foreach (var tag in effectiveTags)
             {
-                if (!this.abstractTags.ContainsKey(tag) &&
-                    this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
+                if (this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
                     !effectiveAndSingleMissingTags.Overlaps(children))
                 {
                     suggestedTags = suggestedTags.AddRange(
