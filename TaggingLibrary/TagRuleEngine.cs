@@ -237,6 +237,7 @@ namespace TaggingLibrary
             var effectiveExcluded = this.GetTagsAndDescendants(singleExcluded).Union(effectiveRejected);
 
             var missingTagSets = ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty;
+            var singleMissingTags = new Dictionary<string, TagRule>();
             var effectiveAndSingleMissingTags = new HashSet<string>(effectiveTags);
             var changed = true;
             while (changed)
@@ -261,6 +262,7 @@ namespace TaggingLibrary
                         if (effectiveRight.Count == 1)
                         {
                             var right = effectiveRight.Single();
+                            singleMissingTags[right] = rule;
                             if (effectiveAndSingleMissingTags.Add(right))
                             {
                                 if (this.specializationParentTotalMap.TryGetValue(right, out var specializes))
@@ -288,6 +290,7 @@ namespace TaggingLibrary
 
             foreach (var tag in effectiveAndSingleMissingTags)
             {
+                var isSingleMissing = singleMissingTags.TryGetValue(tag, out var sourceRule);
                 if (this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
                     !effectiveAndSingleMissingTags.Overlaps(children))
                 {
@@ -297,7 +300,9 @@ namespace TaggingLibrary
                         from directParent in this.specializationParentRuleMap[child]
                         let parentTag = directParent.Key
                         where parentTag == tag || (this.specializationParentTotalMap.TryGetValue(parentTag, out var grandparents) && grandparents.Contains(tag))
-                        select RuleResult.Create(directParent.Value, child));
+                        select isSingleMissing
+                            ? RuleResult.Create(new[] { sourceRule, directParent.Value }, child)
+                            : RuleResult.Create(directParent.Value, child));
                 }
             }
 
