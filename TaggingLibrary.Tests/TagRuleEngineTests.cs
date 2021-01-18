@@ -59,7 +59,7 @@ namespace TaggingLibrary.Tests
         }
 
         [Fact]
-        public void Analyze_WithAMissingTag_InlcudesDescendantsOfTheTagInSuggestedTags()
+        public void Analyze_WithAMissingTag_InlcudesTheFirstConcreteTagInSuggestedTags()
         {
             var parser = new TagRulesParser();
             var rules = parser.Parse(Resources.Animals);
@@ -67,10 +67,8 @@ namespace TaggingLibrary.Tests
 
             var results = engine.Analyze(new[] { "tail" });
 
-            Assert.Contains(results.SuggestedTags, s => s.Result == "dog");
-            Assert.Contains(results.SuggestedTags, s => s.Result == "cat");
-            Assert.Contains(results.SuggestedTags, s => s.Result == "whale");
-            Assert.Contains(results.SuggestedTags, s => s.Result == "dolphin");
+            Assert.Contains(results.SuggestedTags, s => s.Result == "mammal");
+            Assert.DoesNotContain(results.SuggestedTags, s => s.Result == "cat");
         }
 
         [Fact]

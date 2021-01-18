@@ -237,7 +237,7 @@ namespace TaggingLibrary
             var effectiveExcluded = this.GetTagsAndDescendants(singleExcluded).Union(effectiveRejected);
 
             var missingTagSets = ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty;
-            var singleMissingTags = new Dictionary<string, TagRule>();
+            var singleMissingTags = new Dictionary<string, ImmutableList<TagRule>>();
             var effectiveAndSingleMissingTags = new HashSet<string>(effectiveTags);
             var changed = true;
             while (changed)
@@ -257,12 +257,13 @@ namespace TaggingLibrary
                     foreach (var pair in firstGroup)
                     {
                         var rule = pair.Rule;
+                        var sourceRules = ImmutableList.CreateRange(rule.Left.SelectMany(r => singleMissingTags.TryGetValue(r, out var sources) ? sources : ImmutableList<TagRule>.Empty)).Add(rule);
                         var effectiveRight = pair.Right;
-                        missingTagSets = missingTagSets.Add(RuleResult.Create(rule, effectiveRight));
+                        missingTagSets = missingTagSets.Add(RuleResult.Create(sourceRules, effectiveRight));
                         if (effectiveRight.Count == 1)
                         {
                             var right = effectiveRight.Single();
-                            singleMissingTags[right] = rule;
+                            singleMissingTags[right] = sourceRules;
                             if (effectiveAndSingleMissingTags.Add(right))
                             {
                                 if (this.specializationParentTotalMap.TryGetValue(right, out var specializes))
@@ -288,10 +289,10 @@ namespace TaggingLibrary
                 }
             }
 
-            foreach (var tag in effectiveAndSingleMissingTags.Where(t => !this.abstractTags.ContainsKey(t)))
+            foreach (var tag in effectiveTags)
             {
-                var isSingleMissing = singleMissingTags.TryGetValue(tag, out var sourceRule);
-                if (this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
+                if (!this.abstractTags.ContainsKey(tag) &&
+                    this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
                     !effectiveAndSingleMissingTags.Overlaps(children))
                 {
                     suggestedTags = suggestedTags.AddRange(
@@ -300,9 +301,7 @@ namespace TaggingLibrary
                         from directParent in this.specializationParentRuleMap[child]
                         let parentTag = directParent.Key
                         where parentTag == tag || (this.specializationParentTotalMap.TryGetValue(parentTag, out var grandparents) && grandparents.Contains(tag))
-                        select isSingleMissing
-                            ? RuleResult.Create(new[] { sourceRule, directParent.Value }, child)
-                            : RuleResult.Create(directParent.Value, child));
+                        select RuleResult.Create(directParent.Value, child));
                 }
             }
 
@@ -310,14 +309,7 @@ namespace TaggingLibrary
             {
                 if (this.abstractTags.TryGetValue(result.Result, out var abstractRule))
                 {
-                    var sharedRules = result.Rules;
-
-                    if (singleMissingTags.TryGetValue(result.Result, out var sourceRule))
-                    {
-                        sharedRules.Add(sourceRule);
-                    }
-
-                    sharedRules.Add(abstractRule);
+                    var sharedRules = result.Rules.Add(abstractRule);
 
                     var visited = new HashSet<string>();
                     var toVisit = new Queue<string>();
@@ -335,9 +327,11 @@ namespace TaggingLibrary
                                     {
                                         yield return RuleResult.Create(sharedRules, child);
                                     }
+                                    else
+                                    {
+                                        toVisit.Enqueue(child);
+                                    }
                                 }
-
-                                toVisit.Enqueue(child);
                             }
                         }
                     }
