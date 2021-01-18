@@ -288,7 +288,7 @@ namespace TaggingLibrary
                 }
             }
 
-            foreach (var tag in effectiveAndSingleMissingTags)
+            foreach (var tag in effectiveAndSingleMissingTags.Where(t => !this.abstractTags.ContainsKey(t)))
             {
                 var isSingleMissing = singleMissingTags.TryGetValue(tag, out var sourceRule);
                 if (this.specializationChildTotalMap.TryGetValue(tag, out var children) &&
@@ -310,7 +310,14 @@ namespace TaggingLibrary
             {
                 if (this.abstractTags.TryGetValue(result.Result, out var abstractRule))
                 {
-                    var sharedRules = result.Rules.Add(abstractRule);
+                    var sharedRules = result.Rules;
+
+                    if (singleMissingTags.TryGetValue(result.Result, out var sourceRule))
+                    {
+                        sharedRules.Add(sourceRule);
+                    }
+
+                    sharedRules.Add(abstractRule);
 
                     var visited = new HashSet<string>();
                     var toVisit = new Queue<string>();
