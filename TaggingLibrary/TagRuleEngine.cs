@@ -306,6 +306,8 @@ namespace TaggingLibrary
 
             IEnumerable<RuleResult<string>> ExpandAbtractTags(RuleResult<string> result)
             {
+                yield return result;
+
                 if (this.abstractTags.TryGetValue(result.Result, out var abstractRule))
                 {
                     var sharedRules = result.Rules.Add(abstractRule);
@@ -334,10 +336,6 @@ namespace TaggingLibrary
                             }
                         }
                     }
-                }
-                else
-                {
-                    yield return result;
                 }
             }
 

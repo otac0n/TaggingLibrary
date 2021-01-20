@@ -47,7 +47,7 @@ namespace TaggingLibrary.Tests
         }
 
         [Fact]
-        public void Analyze_WithAMissingTag_DoesNotIncludeAbstractDescdendantTagsInSuggestedTags()
+        public void Analyze_WithAMissingTag_DoesNotIncludesRootAbstractDescdendantTagsInSuggestedTags()
         {
             var parser = new TagRulesParser();
             var rules = parser.Parse(Resources.Animals);
@@ -55,7 +55,7 @@ namespace TaggingLibrary.Tests
 
             var results = engine.Analyze(new[] { "tail" });
 
-            Assert.DoesNotContain(results.SuggestedTags, s => s.Result == "animal");
+            Assert.Contains(results.SuggestedTags, s => s.Result == "animal");
         }
 
         [Fact]
