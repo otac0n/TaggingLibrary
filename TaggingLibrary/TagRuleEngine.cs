@@ -158,6 +158,13 @@ namespace TaggingLibrary
         }
 
         /// <summary>
+        /// Gets rules with the specified operator.
+        /// </summary>
+        /// <param name="operator">The <see cref="TagOperator"/> for which rules will be retrieved.</param>
+        /// <returns>An enumerable collection of the specified rules.</returns>
+        public IEnumerable<TagRule> this[TagOperator @operator] => this.tagRules[@operator];
+
+        /// <summary>
         /// Simplifies the specified set of rules by expanding bidirectional rules.
         /// </summary>
         /// <param name="rules">The set of rules to simplify.</param>
