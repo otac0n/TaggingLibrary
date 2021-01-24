@@ -523,6 +523,14 @@ namespace TaggingLibrary
             this.renameMap.TryGetValue(tag, out var renamed) ? renamed : tag;
 
         /// <summary>
+        /// Find all sets of tags that imply the specified tag.
+        /// </summary>
+        /// <param name="target">The tag that is being implied.</param>
+        /// <returns>An enumerable collecion of tag sets that imply the specified tag.</returns>
+        public IEnumerable<ImmutableHashSet<string>> TagSetsThatImply(string target) =>
+            this.tagRules[TagOperator.Implication].Where(r => r.Right.Contains(target)).Select(r => r.Left);
+
+        /// <summary>
         /// Find all sets of tags that suggest the specified tag.
         /// </summary>
         /// <param name="target">The tag that is being suggested.</param>
