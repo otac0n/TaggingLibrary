@@ -435,6 +435,50 @@ namespace TaggingLibrary
         }
 
         /// <summary>
+        /// Finds related tags given the specified <see cref="HierarchyRelation"/>.
+        /// </summary>
+        /// <param name="tag">The tag for which to fetch relations.</param>
+        /// <param name="relation">The hierarchy relation to look-up.</param>
+        /// <returns>The set of tags requested.</returns>
+        public ImmutableHashSet<string> GetRelatedTags(string tag, HierarchyRelation relation)
+        {
+            tag = this.Rename(tag);
+            var tags = ImmutableHashSet<string>.Empty;
+            switch (relation)
+            {
+                case HierarchyRelation.Ancestor:
+                case HierarchyRelation.SelfOrAncestor:
+
+                    tags = tags.Union(this.GetTagAncestors(tag));
+
+                    if (relation == HierarchyRelation.SelfOrAncestor)
+                    {
+                        goto case HierarchyRelation.Self;
+                    }
+
+                    break;
+
+                case HierarchyRelation.Descendant:
+                case HierarchyRelation.SelfOrDescendant:
+
+                    tags = tags.Union(this.GetTagDescendants(tag));
+
+                    if (relation == HierarchyRelation.SelfOrDescendant)
+                    {
+                        goto case HierarchyRelation.Self;
+                    }
+
+                    break;
+
+                case HierarchyRelation.Self:
+                    tags = tags.Add(tag);
+                    break;
+            }
+
+            return tags;
+        }
+
+        /// <summary>
         /// Gets the aliases for the specified tag.
         /// </summary>
         /// <param name="tag">The tag for which to fetch aliases.</param>
