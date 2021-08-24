@@ -12,8 +12,11 @@ op <TagOperator> = o:("<"? "->" / "<"? "~>" / "<"? "!>" / "::" / "=>") { TagRule
 tagsL = tag<1,, _ "&" _>
 tagsR = tag<1,, _ "|" _>
 tagsP <IList<string>> = "[" _ p:property<1,, _ "," _> _ "]" { p }
-tag = "" ([_/A-Za-z0-9][-._/A-Za-z0-9]*)<1,,WS>
-property = "" ([-#@$%^&*()=._/A-Za-z0-9]*)<1,,WS>
+tag = Word
+property = "" (([-#@$%^&*()=] / WordChar / WS)*)<1,,WS>
+
+WordChar = c:. &{ c == "-" || c == "." || c == "_" || c == "/" || c == @"\" || char.IsLetterOrDigit(c[0]) } { c }
+Word = s:WordChar !{ s == "-" || s == "." } WordChar*
 
 EOF = !.
 EOL = "" (_ [\r\n\u2028\u2029])+

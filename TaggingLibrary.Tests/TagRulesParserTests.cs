@@ -2,6 +2,7 @@
 
 namespace TaggingLibrary.Tests
 {
+    using System;
     using System.Linq;
     using Xunit;
 
@@ -18,6 +19,32 @@ namespace TaggingLibrary.Tests
             new[] { "::" },
             new[] { "=>" },
         };
+
+        public static readonly string[] InvalidTags =
+        {
+            " ok",
+            "o k",
+            "ok ",
+            "-ok",
+            ".ok",
+        };
+
+        public static readonly string[] ValidTags =
+        {
+            "ok",
+            "OK",
+            "0k",
+            "o-kay",
+            "O.Kay",
+            "ök",
+            "ok-",
+            "ok.",
+        };
+
+        public static object[][] TagSyntaxValidity =>
+            Enumerable.Concat(
+                ValidTags.Select(t => new object[] { true, t }),
+                InvalidTags.Select(t => new object[] { false, t })).ToArray();
 
         [Fact]
         public void Parse_GivenACompositeRule_ReturnsTheExpectedRules()
@@ -45,6 +72,28 @@ namespace TaggingLibrary.Tests
             Assert.Equal(new[] { "a" }, result.Left);
             Assert.Equal(new[] { "b" }, result.Right);
             Assert.Equal(TagRule.StringToOperatorLookup[@operator], result.Operator);
+        }
+
+        [Theory]
+        [MemberData(nameof(TagSyntaxValidity))]
+        public void Parse_GivenATagOfAKnowValidity_ParsesOrFailsToParseAsExpected(bool valid, string tag)
+        {
+            var parser = new TagRulesParser();
+
+            void test()
+            {
+                var result = parser.Parse($"{tag} [ok]").Single();
+                Assert.Equal(tag, result.Left.Single());
+            }
+
+            if (valid)
+            {
+                test();
+            }
+            else
+            {
+                Assert.ThrowsAny<Exception>(test);
+            }
         }
     }
 }
