@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="TaggingLibrary" Description="Rules for the TaggingLibrary project." ToolsVersion="16.0">
-  <Include Path="..\Strict.ruleset" Action="Default" />
-</RuleSet>

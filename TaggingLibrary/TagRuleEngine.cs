@@ -92,7 +92,7 @@ namespace TaggingLibrary
                 AddParentToChild(target, rename.Key, this.aliasMap);
             }
 
-            this.tagRules = TagRuleEngine.SimplifyRules(this.NormalizeRules(rules)).ToLookup(r => r.Operator);
+            this.tagRules = SimplifyRules(this.NormalizeRules(rules)).ToLookup(r => r.Operator);
 
             foreach (var rule in this.tagRules[TagOperator.Property])
             {
