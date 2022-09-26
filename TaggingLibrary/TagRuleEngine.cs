@@ -22,7 +22,7 @@ namespace TaggingLibrary
         private readonly Dictionary<string, string> renameMap = new Dictionary<string, string>();
         private readonly Dictionary<string, ImmutableHashSet<string>> specializationChildMap = new Dictionary<string, ImmutableHashSet<string>>();
         private readonly Dictionary<string, ImmutableHashSet<string>> specializationChildTotalMap = new Dictionary<string, ImmutableHashSet<string>>();
-        private readonly Dictionary<string, ImmutableDictionary<string, TagRule>> specializationParentRuleMap = new Dictionary<string, ImmutableDictionary<string, TagRule>>();
+        private readonly Dictionary<string, TagsWithRules> specializationParentRuleMap = new Dictionary<string, TagsWithRules>();
         private readonly Dictionary<string, ImmutableHashSet<string>> specializationParentTotalMap = new Dictionary<string, ImmutableHashSet<string>>();
         private readonly ILookup<TagOperator, TagRule> tagRules;
 
@@ -304,10 +304,10 @@ namespace TaggingLibrary
                     suggestedTags = suggestedTags.AddRange(
                         from child in children
                         where !this.abstractTags.ContainsKey(child) && !effectiveExcluded.Contains(child)
-                        from directParent in this.specializationParentRuleMap[child]
-                        let parentTag = directParent.Key
+                        let parentMap = this.specializationParentRuleMap[child]
+                        from parentTag in parentMap.Keys
                         where parentTag == tag || (this.specializationParentTotalMap.TryGetValue(parentTag, out var grandparents) && grandparents.Contains(tag))
-                        select RuleResult.Create(directParent.Value, child));
+                        select RuleResult.Create(parentMap.Rules[parentTag], child));
                 }
             }
 
@@ -377,24 +377,24 @@ namespace TaggingLibrary
             tag = this.Rename(tag);
 
             var visited = new HashSet<string>() { tag };
-            var queue = new Queue<string>();
+            var stack = new Stack<string>();
             this.specializationParentRuleMap.TryGetValue(tag, out var parentsWithRules);
             if (parentsWithRules == null)
             {
                 yield break;
             }
 
-            foreach (var parent in parentsWithRules)
+            foreach (var parentKey in parentsWithRules.Keys.Reverse())
             {
-                if (visited.Add(parent.Key))
+                if (visited.Add(parentKey))
                 {
-                    queue.Enqueue(parent.Key);
+                    stack.Push(parentKey);
                 }
             }
 
-            while (queue.Count > 0)
+            while (stack.Count > 0)
             {
-                var next = queue.Dequeue();
+                var next = stack.Pop();
                 foreach (var property in this.GetTagProperties(next))
                 {
                     if (property != AbstractProperty)
@@ -406,11 +406,11 @@ namespace TaggingLibrary
                 this.specializationParentRuleMap.TryGetValue(next, out parentsWithRules);
                 if (parentsWithRules != null)
                 {
-                    foreach (var parent in parentsWithRules)
+                    foreach (var parentKey in parentsWithRules.Keys.Reverse())
                     {
-                        if (visited.Add(parent.Key))
+                        if (visited.Add(parentKey))
                         {
-                            queue.Enqueue(parent.Key);
+                            stack.Push(parentKey);
                         }
                     }
                 }
@@ -589,14 +589,14 @@ namespace TaggingLibrary
         public IEnumerable<ImmutableHashSet<string>> TagSetsThatSuggest(string target) =>
             this.tagRules[TagOperator.Suggestion].Where(r => r.Right.Contains(target)).Select(r => r.Left);
 
-        private static void AddParentToChild(string fromTag, string toTag, TagRule rule, Dictionary<string, ImmutableDictionary<string, TagRule>> map)
+        private static void AddParentToChild(string fromTag, string toTag, TagRule rule, Dictionary<string, TagsWithRules> map)
         {
             if (!map.TryGetValue(fromTag, out var parents))
             {
-                parents = ImmutableDictionary<string, TagRule>.Empty;
+                parents = TagsWithRules.Empty;
             }
 
-            if (!parents.ContainsKey(toTag))
+            if (!parents.Rules.ContainsKey(toTag))
             {
                 map[fromTag] = parents.Add(toTag, rule);
             }
@@ -687,6 +687,24 @@ namespace TaggingLibrary
             }
 
             return tagsAndDescendants.ToImmutable();
+        }
+
+        private sealed class TagsWithRules
+        {
+            public static readonly TagsWithRules Empty = new TagsWithRules(ImmutableList<string>.Empty, ImmutableDictionary<string, TagRule>.Empty);
+
+            public TagsWithRules(ImmutableList<string> keys, ImmutableDictionary<string, TagRule> rules)
+            {
+                this.Keys = keys;
+                this.Rules = rules;
+            }
+
+            public ImmutableList<string> Keys { get; }
+
+            public ImmutableDictionary<string, TagRule> Rules { get; }
+
+            public TagsWithRules Add(string tag, TagRule rule) =>
+                new TagsWithRules(this.Keys.Add(tag), this.Rules.Add(tag, rule));
         }
     }
 }
