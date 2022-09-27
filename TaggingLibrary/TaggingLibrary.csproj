@@ -3,8 +3,8 @@
   <Import Project="..\SharedAssemblyInfo.props" />
   <PropertyGroup>
     <DebugType>portable</DebugType>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <TargetFrameworks>net6.0;netcoreapp3.1</TargetFrameworks>
     <Description>A library for providing tagging suggestions for documents, music, photos, etc.</Description>
     <PackageIconUrl>
@@ -17,7 +17,6 @@
   <ItemGroup>
     <PackageReference Include="FixMe" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="GitVersionTask" Version="5.5.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
     <PackageReference Include="Pegasus" Version="4.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
