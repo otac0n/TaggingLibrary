@@ -444,35 +444,20 @@ namespace TaggingLibrary
         {
             tag = this.Rename(tag);
             var tags = ImmutableHashSet<string>.Empty;
-            switch (relation)
+
+            if ((relation & HierarchyRelation.Self) != 0)
             {
-                case HierarchyRelation.Ancestor:
-                case HierarchyRelation.SelfOrAncestor:
+                tags = tags.Add(tag);
+            }
 
-                    tags = tags.Union(this.GetTagAncestors(tag));
+            if ((relation & HierarchyRelation.Ancestor) != 0)
+            {
+                tags = tags.Union(this.GetTagAncestors(tag));
+            }
 
-                    if (relation == HierarchyRelation.SelfOrAncestor)
-                    {
-                        goto case HierarchyRelation.Self;
-                    }
-
-                    break;
-
-                case HierarchyRelation.Descendant:
-                case HierarchyRelation.SelfOrDescendant:
-
-                    tags = tags.Union(this.GetTagDescendants(tag));
-
-                    if (relation == HierarchyRelation.SelfOrDescendant)
-                    {
-                        goto case HierarchyRelation.Self;
-                    }
-
-                    break;
-
-                case HierarchyRelation.Self:
-                    tags = tags.Add(tag);
-                    break;
+            if ((relation & HierarchyRelation.Descendant) != 0)
+            {
+                tags = tags.Union(this.GetTagDescendants(tag));
             }
 
             return tags;

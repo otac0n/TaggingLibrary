@@ -2,9 +2,12 @@
 
 namespace TaggingLibrary
 {
+    using System;
+
     /// <summary>
     /// Describes a relationship between a tag and its relatives.
     /// </summary>
+    [Flags]
     public enum HierarchyRelation
     {
         /// <summary>
@@ -28,7 +31,7 @@ namespace TaggingLibrary
         /// <summary>
         /// The specified tag or an ancestor.
         /// </summary>
-        SelfOrAncestor = 3,
+        SelfOrAncestor = Self | Ancestor,
 
         /// <summary>
         /// A descendant of the specified tag.
@@ -38,6 +41,16 @@ namespace TaggingLibrary
         /// <summary>
         /// The specified tag or a descendant.
         /// </summary>
-        SelfOrDescendant = 6,
+        SelfOrDescendant = Self | Descendant,
+
+        /// <summary>
+        /// A relative of the specified tag.
+        /// </summary>
+        Related = Ancestor | Descendant,
+
+        /// <summary>
+        /// The specified tag or any relative.
+        /// </summary>
+        SelfOrRelated = Self | Related,
     }
 }

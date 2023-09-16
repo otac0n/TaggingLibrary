@@ -98,35 +98,20 @@ namespace TaggingLibrary
         public ImmutableHashSet<string> RelatedTags(HierarchyRelation relation)
         {
             var tags = ImmutableHashSet<string>.Empty;
-            switch (relation)
+
+            if ((relation & HierarchyRelation.Self) != 0)
             {
-                case HierarchyRelation.Ancestor:
-                case HierarchyRelation.SelfOrAncestor:
+                tags = tags.Add(this.Tag);
+            }
 
-                    tags = tags.Union(this.Ancestors);
+            if ((relation & HierarchyRelation.Ancestor) != 0)
+            {
+                tags = tags.Union(this.Ancestors);
+            }
 
-                    if (relation == HierarchyRelation.SelfOrAncestor)
-                    {
-                        goto case HierarchyRelation.Self;
-                    }
-
-                    break;
-
-                case HierarchyRelation.Descendant:
-                case HierarchyRelation.SelfOrDescendant:
-
-                    tags = tags.Union(this.Descendants);
-
-                    if (relation == HierarchyRelation.SelfOrDescendant)
-                    {
-                        goto case HierarchyRelation.Self;
-                    }
-
-                    break;
-
-                case HierarchyRelation.Self:
-                    tags = tags.Add(this.Tag);
-                    break;
+            if ((relation & HierarchyRelation.Descendant) != 0)
+            {
+                tags = tags.Union(this.Descendants);
             }
 
             return tags;
