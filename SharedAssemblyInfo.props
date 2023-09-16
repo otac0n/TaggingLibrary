@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <Authors>John Gietzen</Authors>
-    <Copyright>Copyright © 2022 $(Authors)</Copyright>
+    <Copyright>Copyright © 2023 $(Authors)</Copyright>
     <Product>TaggingLibrary</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
