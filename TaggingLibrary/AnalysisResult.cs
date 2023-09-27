@@ -1,4 +1,4 @@
-// Copyright © John Gietzen. All Rights Reserved. This source is subject to the MIT license. Please see license.md for more information.
+﻿// Copyright © John Gietzen. All Rights Reserved. This source is subject to the MIT license. Please see license.md for more information.
 
 namespace TaggingLibrary
 {
@@ -16,6 +16,7 @@ namespace TaggingLibrary
             ImmutableHashSet<string>.Empty,
             ImmutableHashSet<string>.Empty,
             ImmutableHashSet<string>.Empty,
+            ImmutableHashSet<string>.Empty,
             ImmutableList<TagRule>.Empty,
             ImmutableList<RuleResult<ImmutableHashSet<string>>>.Empty,
             ImmutableList<RuleResult<string>>.Empty);
@@ -25,6 +26,7 @@ namespace TaggingLibrary
         /// </summary>
         /// <param name="normalizedTags">The set of normalized tags from the analysis.</param>
         /// <param name="effectiveTags">The effective tags from the analysis.</param>
+        /// <param name="effectiveRejected">The effective rejections from the analysis.</param>
         /// <param name="existingRejectedTags">The set of normalized tags from the analysis that are also rejected.</param>
         /// <param name="violatedExclusions">The set of exclusion rules voilated by the effective tags.</param>
         /// <param name="missingTagSets">The sets of missing tags from the analysis.</param>
@@ -32,6 +34,7 @@ namespace TaggingLibrary
         public AnalysisResult(
             ImmutableHashSet<string> normalizedTags,
             ImmutableHashSet<string> effectiveTags,
+            ImmutableHashSet<string> effectiveRejected,
             ImmutableHashSet<string> existingRejectedTags,
             ImmutableList<TagRule> violatedExclusions,
             ImmutableList<RuleResult<ImmutableHashSet<string>>> missingTagSets,
@@ -39,6 +42,7 @@ namespace TaggingLibrary
         {
             this.NormalizedTags = normalizedTags;
             this.EffectiveTags = effectiveTags;
+            this.EffectiveRejected = effectiveRejected;
             this.ExistingRejectedTags = existingRejectedTags;
             this.ViolatedExclusions = violatedExclusions;
             this.MissingTagSets = missingTagSets;
@@ -49,6 +53,11 @@ namespace TaggingLibrary
         /// Gets the effective tags from the analysis.
         /// </summary>
         public ImmutableHashSet<string> EffectiveTags { get; }
+
+        /// <summary>
+        /// Gets the effective rejections from the analysis.
+        /// </summary>
+        public ImmutableHashSet<string> EffectiveRejected { get; }
 
         /// <summary>
         /// Gets the set of normalized tags from the analysis that are also rejected.

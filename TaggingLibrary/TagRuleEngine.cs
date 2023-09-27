@@ -1,4 +1,4 @@
-// Copyright © John Gietzen. All Rights Reserved. This source is subject to the MIT license. Please see license.md for more information.
+﻿// Copyright © John Gietzen. All Rights Reserved. This source is subject to the MIT license. Please see license.md for more information.
 
 namespace TaggingLibrary
 {
@@ -351,6 +351,7 @@ namespace TaggingLibrary
             return new AnalysisResult(
                 normalizedTags,
                 effectiveTags,
+                effectiveRejected,
                 existingRejectedTags,
                 violatedExclusions,
                 missingTagSets,
